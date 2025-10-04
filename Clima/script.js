@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // ---- CONFIGURACIÓN INICIAL ----
     // Pega tu API Key de OpenWeatherMap aquí. ¡Es crucial para que funcione!
-    const apiKey = '784dca6a594643137304d1166a7f3a43'; 
+    const apiKey = 'cd3d4b74a875ae17582a5f15e5e45f87'; 
 
     // ---- ELEMENTOS DEL DOM ----
     const cityInput = document.getElementById('city-input');
