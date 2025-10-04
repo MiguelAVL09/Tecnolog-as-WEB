@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mi Hub de Proyectos — Panel</title>
+  <style>
+    /* Reset */
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body,#app{height:100%}
+    body{font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:linear-gradient(135deg,#0f172a 0%,#020617 60%);color:#e6eef8}
+
+    /* Layout */
+    .container{display:grid;grid-template-columns:320px 1fr;gap:20px;height:100vh;padding:28px}
+
+    /* Sidebar */
+    .sidebar{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));backdrop-filter:blur(6px);border-radius:18px;padding:18px;box-shadow:0 10px 30px rgba(2,6,23,0.6);display:flex;flex-direction:column;gap:14px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(45deg,#7c3aed,#06b6d4);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(124,58,237,0.25);font-weight:700}
+    .brand h1{font-size:16px;letter-spacing:0.2px}
+    .brand p{font-size:12px;color:rgba(230,238,248,0.7)}
+
+    .search{display:flex;gap:8px;align-items:center}
+    .search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+
+    .projects{flex:1;overflow:auto;padding-right:6px;display:flex;flex-direction:column;gap:8px}
+    .project-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer;transition:all .18s; border:1px solid transparent}
+    .project-item:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .project-thumb{width:44px;height:34px;border-radius:8px;background:linear-gradient(90deg,#111827,#0b1220);display:flex;align-items:center;justify-content:center;font-weight:600}
+    .project-meta{flex:1}
+    .project-meta h3{font-size:14px}
+    .project-meta p{font-size:12px;color:rgba(230,238,248,0.65)}
+    .project-actions{display:flex;gap:8px}
+    .btn{padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);cursor:pointer}
+
+    /* Main area */
+    .main{display:flex;flex-direction:column;gap:14px}
+    .header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .title{font-size:20px}
+    .controls{display:flex;gap:12px;align-items:center}
+
+    .preview{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:16px;padding:14px;box-shadow:0 10px 40px rgba(2,6,23,0.6);position:relative;overflow:hidden}
+    .preview-iframe{width:100%;height:100%;border-radius:10px;border:0;display:block}
+
+    /* Placeholder */
+    .placeholder{display:grid;place-items:center;height:100%;color:rgba(230,238,248,0.6);text-align:center;padding:28px}
+
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:radial-gradient(ellipse at center, rgba(2,6,23,0.6), rgba(2,6,23,0.85));display:none;align-items:center;justify-content:center;padding:28px}
+    .modal{width:680px;max-width:96%;background:linear-gradient(180deg,#061126 0%,#041021 100%);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.04)}
+    .modal h2{margin-bottom:10px}
+    .form-row{display:flex;gap:8px;margin-bottom:8px}
+    .form-row input{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+
+    /* Animations */
+    .glow{position:absolute;right:-120px;bottom:-120px;width:360px;height:360px;background:linear-gradient(45deg, rgba(124,58,237,0.18), rgba(6,182,212,0.12));filter:blur(40px);transform:rotate(30deg);pointer-events:none}
+
+    /* Tiny responsive */
+    @media (max-width:880px){.container{grid-template-columns:1fr; padding:18px}.sidebar{order:2}.main{order:1}.header{flex-wrap:wrap}}
+
+    /* micro interactions */
+    .pulse{animation:pulse 2.4s infinite}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
+
+    /* nice scrollbar */
+    .projects::-webkit-scrollbar{width:8px}
+    .projects::-webkit-scrollbar-thumb{background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));border-radius:8px}
+  </style>
+</head>
+<body>
+  <div id="app" class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">MV</div>
+        <div>
+          <h1>Mi Hub de Proyectos</h1>
+          <p>Conecta tu GitHub — añade y previsualiza proyectos</p>
+        </div>
+      </div>
+
+      <div class="search">
+        <input id="filter" placeholder="Buscar proyectos..."/>
+        <button id="addBtn" class="btn">➕</button>
+      </div>
+
+      <div id="projects" class="projects" aria-live="polite">
+        <!-- proyectos dinámicos -->
+      </div>
+
+      <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+        <small style="color:rgba(230,238,248,0.6)">Guardado en tu navegador</small>
+        <button id="resetBtn" class="btn">Restaurar</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="header">
+        <div>
+          <div class="title">Previsualizador</div>
+          <div style="font-size:13px;color:rgba(230,238,248,0.65)">Selecciona un proyecto en la izquierda para cargarlo aquí</div>
+        </div>
+        <div class="controls">
+          <button id="openGithub" class="btn">Abrir en GitHub</button>
+          <button id="editBtn" class="btn">Editar</button>
+        </div>
+      </div>
+
+      <div class="preview">
+        <div class="glow"></div>
+        <div id="previewInner" class="placeholder">
+          <div>
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.9"><path d="M3 3h18v6H3z"></path><path d="M5 21h14a1 1 0 0 0 1-1V10H4v10a1 1 0 0 0 1 1z"></path></svg>
+            <h2 style="margin-top:12px">Ningún proyecto seleccionado</h2>
+            <p style="margin-top:8px;max-width:540px;color:rgba(230,238,248,0.6)">Presiona <strong>➕</strong> para agregar un proyecto (URL de GitHub Pages o enlace público) y entrégale un nombre. También puedes editar proyectos existentes.</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2 id="modalTitle">Agregar Proyecto</h2>
+      <div class="form-row">
+        <input id="pTitle" placeholder="Título del proyecto (ej: Mi juego)" />
+        <input id="pURL" placeholder="URL (ej: https://tuusuario.github.io/repo/)" />
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+        <button id="cancel" class="btn">Cancelar</button>
+        <button id="save" class="btn">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mínima librería para manejo del UI
+    const qs = s => document.querySelector(s);
+    const qsa = s => document.querySelectorAll(s);
+
+    const projectsEl = qs('#projects');
+    const previewInner = qs('#previewInner');
+    const addBtn = qs('#addBtn');
+    const modal = qs('#modal');
+    const saveBtn = qs('#save');
+    const cancelBtn = qs('#cancel');
+    const pTitle = qs('#pTitle');
+    const pURL = qs('#pURL');
+    const filter = qs('#filter');
+    const resetBtn = qs('#resetBtn');
+    const openGithubBtn = qs('#openGithub');
+    const editBtn = qs('#editBtn');
+
+    let projects = JSON.parse(localStorage.getItem('mv_projects') || '[]');
+    let selected = null;
+
+    function renderList(filterText=''){
+      projectsEl.innerHTML='';
+      const list = projects.filter(p=>p.title.toLowerCase().includes(filterText.toLowerCase()));
+      if(!list.length){
+        projectsEl.innerHTML = '<div style="color:rgba(230,238,248,0.45);padding:14px">No hay proyectos. Agrega uno con ➕</div>'
+        return;
+      }
+      list.forEach((p, idx)=>{
+        const item = document.createElement('div');
+        item.className='project-item';
+        item.innerHTML = `
+          <div class="project-thumb">${(p.title||'P').slice(0,2).toUpperCase()}</div>
+          <div class="project-meta">
+            <h3>${escapeHtml(p.title)}</h3>
+            <p>${truncate(p.url,48)}</p>
+          </div>
+          <div class="project-actions">
+            <button data-idx="${idx}" class="btn openBtn">▶</button>
+            <button data-idx="${idx}" class="btn editSmall">✎</button>
+            <button data-idx="${idx}" class="btn delSmall">🗑</button>
+          </div>
+        `;
+        projectsEl.appendChild(item);
+      });
+    }
+
+    function truncate(s,n){return s.length>n? s.slice(0,n-1)+'…':s}
+    function escapeHtml(s){return (s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+
+    function openPreview(idx){
+      const p = projects[idx];
+      selected = idx;
+      previewInner.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.className='preview-iframe';
+      iframe.src = p.url;
+      iframe.loading = 'lazy';
+      previewInner.appendChild(iframe);
+      openGithubBtn.onclick = ()=> window.open(p.url,'_blank');
+      editBtn.onclick = ()=> openEdit(idx);
+      updateActiveInList();
+    }
+
+    function updateActiveInList(){
+      qsa('.project-item').forEach((el,i)=>{
+        el.style.borderColor = (i===selected)?'rgba(124,58,237,0.6)':'transparent';
+        el.style.boxShadow = (i===selected)?'0 12px 30px rgba(124,58,237,0.08)':'';
+      });
+    }
+
+    // Events (delegation)
+    projectsEl.addEventListener('click', e=>{
+      const open = e.target.closest('.openBtn');
+      const edit = e.target.closest('.editSmall');
+      const del = e.target.closest('.delSmall');
+      const item = e.target.closest('.project-item');
+      if(open) return openPreview(open.dataset.idx);
+      if(edit) return openEdit(edit.dataset.idx);
+      if(del) return deleteProject(del.dataset.idx);
+      if(item){
+        const idx = Array.from(projectsEl.children).indexOf(item);
+        if(idx>=0) openPreview(idx);
+      }
+    });
+
+    function openEdit(idx){
+      const p = projects[idx];
+      qs('#modalTitle').textContent = 'Editar Proyecto';
+      pTitle.value = p.title; pURL.value = p.url;
+      modal.style.display='flex';
+      saveBtn.onclick = ()=>{ projects[idx] = {title:pTitle.value.trim(), url:pURL.value.trim()}; persist(); closeModal(); renderList(filter.value); if(selected==idx) openPreview(idx)};
+    }
+
+    function deleteProject(idx){
+      if(!confirm('¿Eliminar este proyecto?')) return;
+      projects.splice(idx,1); persist(); renderList(filter.value); previewInner.innerHTML = '<div class="placeholder"><div><h2>Selecciona otro proyecto</h2></div></div>';
+    }
+
+    addBtn.addEventListener('click', ()=>{
+      qs('#modalTitle').textContent = 'Agregar Proyecto';
+      pTitle.value=''; pURL.value=''; modal.style.display='flex';
+      saveBtn.onclick = ()=>{
+        const title = pTitle.value.trim(); const url = pURL.value.trim();
+        if(!title||!url){ alert('Ambos campos son requeridos'); return; }
+        projects.unshift({title, url}); persist(); closeModal(); renderList(filter.value); openPreview(0);
+      }
+    });
+
+    cancelBtn.addEventListener('click', closeModal);
+    function closeModal(){ modal.style.display='none'; }
+
+    filter.addEventListener('input', ()=> renderList(filter.value));
+
+    function persist(){ localStorage.setItem('mv_projects', JSON.stringify(projects)); }
+
+    resetBtn.addEventListener('click', ()=>{
+      if(!confirm('Restaurar datos de ejemplo y limpiar los guardados?')) return;
+      loadSample();
+    });
+
+    function loadSample(){
+      projects = [
+        {title:'Portafolio (Demo)', url:'https://mito.github.io/portafolio/'},
+        {title:'Juego Canvas', url:'https://mito.github.io/juego-canvas/'},
+        {title:'App SPA React', url:'https://mito.github.io/app-react/'}
+      ];
+      persist(); renderList();
+    }
+
+    // initialize
+    if(!projects.length) loadSample();
+    renderList();
+
+    // small UX: double-click to open
+    projectsEl.addEventListener('dblclick', e=>{
+      const item = e.target.closest('.project-item');
+      if(!item) return; const idx = Array.from(projectsEl.children).indexOf(item); if(idx>=0) openPreview(idx);
+    });
+
+    // keyboard shortcuts
+    window.addEventListener('keydown', e=>{
+      if((e.ctrlKey||e.metaKey) && e.key==='k'){ e.preventDefault(); filter.focus(); }
+      if((e.ctrlKey||e.metaKey) && e.key==='n'){ e.preventDefault(); addBtn.click(); }
+    });
+
+    // tiny helper to prevent invalid iframe sandbox issues
+    window.addEventListener('message', ()=>{});
+  </script>
+</body>
+</html>
