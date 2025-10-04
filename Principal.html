@@ -1,3 +1,29 @@
+¡Excelente idea\! Añadir efectos de carga mejora mucho la experiencia de usuario, dando una sensación de profesionalismo y respuesta.
+
+He modificado el código para incorporar ambos efectos que solicitaste:
+
+1.  **Efecto de Carga Inicial (Preloader):** Un indicador aparecerá a pantalla completa mientras la aplicación se carga por primera vez. Se desvanecerá suavemente cuando todo esté listo.
+2.  **Indicador de Carga para Proyectos:** Al seleccionar un proyecto, verás un indicador de carga dentro del panel de previsualización. Este permanecerá visible hasta que la página externa (`iframe`) se haya cargado por completo.
+
+A continuación, te explico los cambios y te proporciono el código completo.
+
+-----
+
+### Resumen de los Cambios
+
+  * **CSS:** He añadido estilos para dos nuevos elementos: `#preloader` (el cargador de página completa) y `.preview-loader` (el indicador para el `iframe`). Ambos usan animaciones CSS para el efecto giratorio.
+  * **HTML:** He agregado el `div` del `#preloader` justo al inicio del `<body>` para que sea lo primero que se vea.
+  * **JavaScript:**
+      * He modificado la función `openPreview` para que primero muestre el `.preview-loader` y luego, una vez que el `iframe` ha cargado su contenido (usando el evento `iframe.onload`), oculte el cargador y muestre el `iframe`.
+      * He añadido un nuevo listener para el evento `window.onload` al final del script. Este se encarga de ocultar el `#preloader` inicial con un efecto de desvanecimiento.
+
+-----
+
+### Código Modificado
+
+Aquí tienes el código actualizado y listo para usar. Los cambios están claramente señalados con comentarios.
+
+```html
 <!doctype html>
 <html lang="es">
 <head>
@@ -10,19 +36,56 @@
     html,body,#app{height:100%}
     body{font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:linear-gradient(135deg,#0f172a 0%,#020617 60%);color:#e6eef8}
 
+    /* --- NUEVO: ESTILOS PARA EL PRELOADER DE PÁGINA --- */
+    #preloader {
+      position: fixed;
+      inset: 0;
+      background: #020617;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+    }
+    #preloader.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .spinner {
+      width: 56px;
+      height: 56px;
+      border: 6px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #7c3aed;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* --- NUEVO: ESTILOS PARA EL CARGADOR DEL PREVISUALIZADOR --- */
+    .preview-loader {
+      width: 48px;
+      height: 48px;
+      border: 5px solid rgba(255, 255, 255, 0.1);
+      border-bottom-color: #06b6d4;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      /* Centrado dentro del previsualizador */
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
     /* Layout */
     .container{display:grid;grid-template-columns:320px 1fr;gap:20px;height:100vh;padding:28px}
-
-    /* Sidebar */
     .sidebar{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));backdrop-filter:blur(6px);border-radius:18px;padding:18px;box-shadow:0 10px 30px rgba(2,6,23,0.6);display:flex;flex-direction:column;gap:14px}
     .brand{display:flex;align-items:center;gap:12px}
     .logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(45deg,#7c3aed,#06b6d4);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(124,58,237,0.25);font-weight:700}
     .brand h1{font-size:16px;letter-spacing:0.2px}
     .brand p{font-size:12px;color:rgba(230,238,248,0.7)}
-
     .search{display:flex;gap:8px;align-items:center}
     .search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-
     .projects{flex:1;overflow:auto;padding-right:6px;display:flex;flex-direction:column;gap:8px}
     .project-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer;transition:all .18s; border:1px solid transparent}
     .project-item:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(2,6,23,0.6)}
@@ -30,78 +93,38 @@
     .project-meta{flex:1}
     .project-meta h3{font-size:14px}
     .project-meta p{font-size:12px;color:rgba(230,238,248,0.65)}
-    .project-actions{display:flex;gap:8px}
     .btn{padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);cursor:pointer}
-
-    /* Main area */
     .main{display:flex;flex-direction:column;gap:14px}
     .header{display:flex;justify-content:space-between;align-items:center;gap:12px}
     .title{font-size:20px}
     .controls{display:flex;gap:12px;align-items:center}
-
     .preview{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:16px;padding:14px;box-shadow:0 10px 40px rgba(2,6,23,0.6);position:relative;overflow:hidden}
     .preview-iframe{width:100%;height:100%;border-radius:10px;border:0;display:block}
-
-    /* Placeholder */
     .placeholder{display:grid;place-items:center;height:100%;color:rgba(230,238,248,0.6);text-align:center;padding:28px}
-
-    /* Modal */
     .modal-backdrop{position:fixed;inset:0;background:radial-gradient(ellipse at center, rgba(2,6,23,0.6), rgba(2,6,23,0.85));display:none;align-items:center;justify-content:center;padding:28px}
     .modal{width:680px;max-width:96%;background:linear-gradient(180deg,#061126 0%,#041021 100%);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.04)}
     .modal h2{margin-bottom:10px}
     .form-row{display:flex;gap:8px;margin-bottom:8px}
     .form-row input{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-
-    /* Animations */
     .glow{position:absolute;right:-120px;bottom:-120px;width:360px;height:360px;background:linear-gradient(45deg, rgba(124,58,237,0.18), rgba(6,182,212,0.12));filter:blur(40px);transform:rotate(30deg);pointer-events:none}
-
-    /* Tiny responsive */
     @media (max-width:880px){.container{grid-template-columns:1fr; padding:18px}.sidebar{order:2}.main{order:1}.header{flex-wrap:wrap}}
-
-    /* micro interactions */
     .pulse{animation:pulse 2.4s infinite}
     @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
-
-    /* nice scrollbar */
     .projects::-webkit-scrollbar{width:8px}
     .projects::-webkit-scrollbar-thumb{background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));border-radius:8px}
-    
-    /* --- NUEVOS ESTILOS PARA EL MENÚ CONTEXTUAL --- */
-    .context-menu {
-      position: absolute;
-      display: none;
-      background: #0a142c;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 6px;
-      box-shadow: 0 8px 24px rgba(2, 6, 23, 0.7);
-      z-index: 1000;
-      backdrop-filter: blur(4px);
-    }
-    .context-menu ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-    .context-menu li {
-      padding: 8px 14px;
-      cursor: pointer;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    .context-menu li:hover {
-      background: rgba(124, 58, 237, 0.2);
-    }
-    .context-menu li.delete {
-      color: #f472b6;
-    }
-    .context-menu li.delete:hover {
-      background: rgba(244, 114, 182, 0.2);
-    }
-    /* --- FIN DE NUEVOS ESTILOS --- */
+    .context-menu{position:absolute;display:none;background:#0a142c;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:6px;box-shadow:0 8px 24px rgba(2,6,23,0.7);z-index:1000;backdrop-filter:blur(4px)}
+    .context-menu ul{list-style:none;margin:0;padding:0}
+    .context-menu li{padding:8px 14px;cursor:pointer;border-radius:6px;font-size:14px}
+    .context-menu li:hover{background:rgba(124,58,237,0.2)}
+    .context-menu li.delete{color:#f472b6}
+    .context-menu li.delete:hover{background:rgba(244,114,182,0.2)}
   </style>
 </head>
 <body>
+  <div id="preloader">
+    <div class="spinner"></div>
+  </div>
+
   <div id="app" class="container">
     <aside class="sidebar">
       <div class="brand">
@@ -111,21 +134,16 @@
           <p>Conecta tu GitHub — añade y previsualiza proyectos</p>
         </div>
       </div>
-
       <div class="search">
         <input id="filter" placeholder="Buscar proyectos..."/>
         <button id="addBtn" class="btn">➕</button>
       </div>
-
-      <div id="projects" class="projects" aria-live="polite">
-        </div>
-
+      <div id="projects" class="projects" aria-live="polite"></div>
       <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
         <small style="color:rgba(230,238,248,0.6)">Guardado en tu navegador</small>
         <button id="resetBtn" class="btn">Restaurar</button>
       </div>
     </aside>
-
     <main class="main">
       <div class="header">
         <div>
@@ -137,7 +155,6 @@
           <button id="editBtn" class="btn">Editar</button>
         </div>
       </div>
-
       <div class="preview">
         <div class="glow"></div>
         <div id="previewInner" class="placeholder">
@@ -174,10 +191,8 @@
   </div>
 
   <script>
-    // Mínima librería para manejo del UI
     const qs = s => document.querySelector(s);
     const qsa = s => document.querySelectorAll(s);
-
     const projectsEl = qs('#projects');
     const previewInner = qs('#previewInner');
     const addBtn = qs('#addBtn');
@@ -190,9 +205,7 @@
     const resetBtn = qs('#resetBtn');
     const openGithubBtn = qs('#openGithub');
     const editBtn = qs('#editBtn');
-    // --- NUEVA VARIABLE PARA EL MENÚ ---
     const contextMenu = qs('#contextMenu');
-
     let projects = JSON.parse(localStorage.getItem('mv_projects') || '[]');
     let selected = null;
 
@@ -203,10 +216,9 @@
         projectsEl.innerHTML = '<div style="color:rgba(230,238,248,0.45);padding:14px">No hay proyectos. Agrega uno con ➕</div>'
         return;
       }
-      list.forEach((p)=>{ // Se quita el idx porque ya no se usa aquí
+      list.forEach((p)=>{
         const item = document.createElement('div');
         item.className='project-item';
-        // --- PLANTILLA MODIFICADA: Se eliminó div.project-actions ---
         item.innerHTML = `
           <div class="project-thumb">${(p.title||'P').slice(0,2).toUpperCase()}</div>
           <div class="project-meta">
@@ -221,15 +233,27 @@
     function truncate(s,n){return s.length>n? s.slice(0,n-1)+'…':s}
     function escapeHtml(s){return (s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 
+    // --- FUNCIÓN openPreview MODIFICADA CON EFECTO DE CARGA ---
     function openPreview(idx){
       const p = projects[idx];
       selected = idx;
-      previewInner.innerHTML = '';
+      
+      // 1. Muestra el indicador de carga inmediatamente
+      previewInner.innerHTML = '<div class="preview-loader"></div>';
+      
       const iframe = document.createElement('iframe');
       iframe.className='preview-iframe';
+      
+      // 2. Cuando el iframe termina de cargar, reemplaza el loader por el iframe
+      iframe.onload = () => {
+        previewInner.innerHTML = ''; // Limpia el loader
+        previewInner.appendChild(iframe); // Añade el iframe ya cargado
+      };
+      
+      // 3. Asigna la URL para que empiece a cargar en segundo plano
       iframe.src = p.url;
       iframe.loading = 'lazy';
-      previewInner.appendChild(iframe);
+      
       openGithubBtn.onclick = ()=> window.open(p.url,'_blank');
       editBtn.onclick = ()=> openEdit(idx);
       updateActiveInList();
@@ -242,9 +266,6 @@
       });
     }
 
-    // --- MANEJO DE EVENTOS MODIFICADO ---
-
-    // Evento de clic normal para abrir la previsualización
     projectsEl.addEventListener('click', e=>{
       const item = e.target.closest('.project-item');
       if(item){
@@ -253,39 +274,31 @@
       }
     });
 
-    // Evento de clic derecho (contextmenu) para mostrar las opciones
     projectsEl.addEventListener('contextmenu', e=>{
-      e.preventDefault(); // Previene el menú por defecto del navegador
+      e.preventDefault();
       const item = e.target.closest('.project-item');
       if(!item) return;
-
       const idx = Array.from(projectsEl.children).indexOf(item);
       if(idx < 0) return;
-
       contextMenu.style.display = 'block';
       contextMenu.style.left = `${e.pageX}px`;
       contextMenu.style.top = `${e.pageY}px`;
-      contextMenu.dataset.idx = idx; // Guardamos el índice del proyecto en el menú
+      contextMenu.dataset.idx = idx;
     });
 
-    // Ocultar el menú contextual al hacer clic en cualquier parte
     window.addEventListener('click', ()=>{
       contextMenu.style.display = 'none';
     });
     
-    // Manejar acciones del menú contextual
     contextMenu.addEventListener('click', e => {
       const action = e.target.dataset.action;
       const idx = parseInt(contextMenu.dataset.idx, 10);
       if (isNaN(idx)) return;
-
       if (action === 'open') openPreview(idx);
       if (action === 'edit') openEdit(idx);
       if (action === 'delete') deleteProject(idx);
     });
     
-    // --- FIN DE LA MODIFICACIÓN DE EVENTOS ---
-
     function openEdit(idx){
       const p = projects[idx];
       qs('#modalTitle').textContent = 'Editar Proyecto';
@@ -313,9 +326,7 @@
 
     cancelBtn.addEventListener('click', closeModal);
     function closeModal(){ modal.style.display='none'; }
-
     filter.addEventListener('input', ()=> renderList(filter.value));
-
     function persist(){ localStorage.setItem('mv_projects', JSON.stringify(projects)); }
 
     resetBtn.addEventListener('click', ()=>{
@@ -336,20 +347,23 @@
     if(!projects.length) loadSample();
     renderList();
 
-    // small UX: double-click to open
     projectsEl.addEventListener('dblclick', e=>{
       const item = e.target.closest('.project-item');
       if(!item) return; const idx = Array.from(projectsEl.children).indexOf(item); if(idx>=0) openPreview(idx);
     });
 
-    // keyboard shortcuts
     window.addEventListener('keydown', e=>{
       if((e.ctrlKey||e.metaKey) && e.key==='k'){ e.preventDefault(); filter.focus(); }
       if((e.ctrlKey||e.metaKey) && e.key==='n'){ e.preventDefault(); addBtn.click(); }
     });
 
-    // tiny helper to prevent invalid iframe sandbox issues
     window.addEventListener('message', ()=>{});
+
+    // --- NUEVO: OCULTAR PRELOADER CUANDO LA PÁGINA ESTÉ LISTA ---
+    window.addEventListener('load', () => {
+      qs('#preloader').classList.add('hidden');
+    });
   </script>
 </body>
 </html>
+```
