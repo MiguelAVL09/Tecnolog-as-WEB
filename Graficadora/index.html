@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graficadora Interactiva</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <h2>Funciones</h2>
+          <p>Añade expresiones en x</p>
+        </div>
+        <div class="sidebar-controls">
+            <button id="export-btn" title="Exportar como PNG">🖼️</button>
+            <label class="theme-switch" title="Cambiar tema">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+      </div>
+      
+      <div id="function-list" class="function-list">
+        </div>
+      <div class="add-function-group">
+        <input type="text" id="function-input" placeholder="Ej: sin(x), x^2...">
+        <button id="toggle-keyboard-btn">⌨️</button>
+        <button id="add-function-btn">+</button>
+      </div>
+      <div id="error-message" class="error-message"></div>
+      <div id="virtual-keyboard" class="virtual-keyboard hidden"></div>
+    </div>
+
+    <div class="main-content">
+      <div class="chart-container">
+        <canvas id="grafica"></canvas>
+      </div>
+      <div class="chart-controls">
+        <button id="zoom-in-btn">+</button>
+        <button id="zoom-out-btn">-</button>
+        <button id="reset-view-btn">⌂</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="libs/chart.min.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>
