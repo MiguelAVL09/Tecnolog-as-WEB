@@ -3,356 +3,310 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mi Hub de Proyectos — Panel</title>
+  <title>Mi Hub de Proyectos — Portafolio</title>
   <style>
-    /* Reset */
+    /* Reset & Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
     *{box-sizing:border-box;margin:0;padding:0}
-    html,body,#app{height:100%}
-    body{font-family:Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:linear-gradient(135deg,#0f172a 0%,#020617 60%);color:#e6eef8}
-
-    /* --- ESTILOS PARA EL PRELOADER DE PÁGINA --- */
-    #preloader {
-      position: fixed;
-      inset: 0;
+    html,body{height:100%;}
+    body{
+      font-family:'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; 
       background: #020617;
-      z-index: 9999;
+      color: #e6eef8;
+      overflow-x: hidden;
+    }
+
+    /* --- CONTENEDOR PRINCIPAL Y CABECERA --- */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .header h1 {
+      font-size: 28px;
+      background: linear-gradient(45deg, #a78bfa, #06b6d4);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      cursor: pointer;
+      color: #e6eef8;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: #a78bfa;
+    }
+
+    /* --- PARRILLA DE PROYECTOS --- */
+    .project-grid {
       display: grid;
-      place-items: center;
-      transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
-    }
-    #preloader.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-    .spinner {
-      width: 56px;
-      height: 56px;
-      border: 6px solid rgba(255, 255, 255, 0.1);
-      border-top-color: #7c3aed;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
     }
     
-    /* --- ESTILOS PARA EL CARGADOR DEL PREVISUALIZADOR --- */
-    .preview-loader {
-      width: 48px;
-      height: 48px;
-      border: 5px solid rgba(255, 255, 255, 0.1);
-      border-bottom-color: #06b6d4;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+    /* --- ESTILO DE LA TARJETA DE PROYECTO --- */
+    .project-card {
+      background: linear-gradient(135deg, #0f172a, #13203c);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 24px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: cardFadeIn 0.5s ease-out forwards;
+    }
+    .project-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(167, 139, 250, 0.15);
+    }
+    .project-card::before {
+      content: '';
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      top: 0;
+      left: -150%;
+      width: 75%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-25deg);
+      transition: left 0.75s ease;
+    }
+    .project-card:hover::before {
+      left: 150%;
+    }
+    .card-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+    .card-icon { font-size: 36px; }
+    .card-title { font-size: 20px; font-weight: 600; color: #fff; }
+    .card-desc { font-size: 14px; color: rgba(230, 238, 248, 0.7); line-height: 1.6; }
+
+    @keyframes cardFadeIn {
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Layout */
-    .container{display:grid;grid-template-columns:320px 1fr;gap:20px;height:100vh;padding:28px}
-    .sidebar{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));backdrop-filter:blur(6px);border-radius:18px;padding:18px;box-shadow:0 10px 30px rgba(2,6,23,0.6);display:flex;flex-direction:column;gap:14px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(45deg,#7c3aed,#06b6d4);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(124,58,237,0.25);font-weight:700}
-    .brand h1{font-size:16px;letter-spacing:0.2px}
-    .brand p{font-size:12px;color:rgba(230,238,248,0.7)}
-    .search{display:flex;gap:8px;align-items:center}
-    .search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-    .projects{flex:1;overflow:auto;padding-right:6px;display:flex;flex-direction:column;gap:8px}
-    .project-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer;transition:all .18s; border:1px solid transparent}
-    .project-item:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-    .project-thumb{width:44px;height:34px;border-radius:8px;background:linear-gradient(90deg,#111827,#0b1220);display:flex;align-items:center;justify-content:center;font-weight:600}
-    .project-meta{flex:1}
-    .project-meta h3{font-size:14px}
-    .project-meta p{font-size:12px;color:rgba(230,238,248,0.65)}
-    .btn{padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);cursor:pointer}
-    .main{display:flex;flex-direction:column;gap:14px}
-    .header{display:flex;justify-content:space-between;align-items:center;gap:12px}
-    .title{font-size:20px}
-    .controls{display:flex;gap:12px;align-items:center}
-    .preview{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:16px;padding:14px;box-shadow:0 10px 40px rgba(2,6,23,0.6);position:relative;overflow:hidden}
-    .preview-iframe{width:100%;height:100%;border-radius:10px;border:0;display:block}
-    .placeholder{display:grid;place-items:center;height:100%;color:rgba(230,238,248,0.6);text-align:center;padding:28px}
-    .modal-backdrop{position:fixed;inset:0;background:radial-gradient(ellipse at center, rgba(2,6,23,0.6), rgba(2,6,23,0.85));display:none;align-items:center;justify-content:center;padding:28px}
-    .modal{width:680px;max-width:96%;background:linear-gradient(180deg,#061126 0%,#041021 100%);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.04)}
-    .modal h2{margin-bottom:10px}
-    .form-row{display:flex;gap:8px;margin-bottom:8px}
-    .form-row input{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-    .glow{position:absolute;right:-120px;bottom:-120px;width:360px;height:360px;background:linear-gradient(45deg, rgba(124,58,237,0.18), rgba(6,182,212,0.12));filter:blur(40px);transform:rotate(30deg);pointer-events:none}
-    @media (max-width:880px){.container{grid-template-columns:1fr; padding:18px}.sidebar{order:2}.main{order:1}.header{flex-wrap:wrap}}
-    .pulse{animation:pulse 2.4s infinite}
-    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.03)}100%{transform:scale(1)}}
-    .projects::-webkit-scrollbar{width:8px}
-    .projects::-webkit-scrollbar-thumb{background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));border-radius:8px}
-    .context-menu{position:absolute;display:none;background:#0a142c;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:6px;box-shadow:0 8px 24px rgba(2,6,23,0.7);z-index:1000;backdrop-filter:blur(4px)}
+    /* --- MODAL --- */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.8);display:none;align-items:center;justify-content:center;padding:28px;backdrop-filter:blur(5px);z-index:100}
+    .modal{width:500px;max-width:96%;background:#0f172a;border-radius:12px;padding:24px;border:1px solid rgba(255,255,255,.1);box-shadow:0 10px 30px rgba(0,0,0,0.3)}
+    .modal h2{margin-bottom:20px;font-size:22px}
+    .form-group{margin-bottom:12px}
+    .form-group input{width:100%;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(2,6,23,.5);color:inherit;font-size:14px}
+    .modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:20px}
+
+    /* --- NUEVO: ESTILOS DEL MENÚ CONTEXTUAL --- */
+    .context-menu{position:absolute;display:none;background:#13203c;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px;box-shadow:0 8px 24px rgba(2,6,23,.7);z-index:1000;backdrop-filter:blur(4px)}
     .context-menu ul{list-style:none;margin:0;padding:0}
-    .context-menu li{padding:8px 14px;cursor:pointer;border-radius:6px;font-size:14px}
-    .context-menu li:hover{background:rgba(124,58,237,0.2)}
+    .context-menu li{padding:8px 14px;cursor:pointer;border-radius:6px;font-size:14px;white-space:nowrap;}
+    .context-menu li:hover{background:rgba(167,139,250,.2)}
     .context-menu li.delete{color:#f472b6}
-    .context-menu li.delete:hover{background:rgba(244,114,182,0.2)}
+    .context-menu li.delete:hover{background:rgba(244,114,182,.2)}
+
   </style>
 </head>
 <body>
-  <div id="preloader">
-    <div class="spinner"></div>
+  
+  <div class="container">
+    <div class="header">
+      <h1>Mis Proyectos</h1>
+      <button id="addBtn" class="btn">➕ Agregar Proyecto</button>
+    </div>
+
+    <div id="project-grid" class="project-grid">
+      </div>
   </div>
 
-  <div id="app" class="container">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="logo">MV</div>
-        <div>
-          <h1>Mi Hub de Proyectos</h1>
-          <p>Conecta tu GitHub — añade y previsualiza proyectos</p>
-        </div>
-      </div>
-      <div class="search">
-        <input id="filter" placeholder="Buscar proyectos..."/>
-        <button id="addBtn" class="btn">➕</button>
-      </div>
-      <div id="projects" class="projects" aria-live="polite"></div>
-      <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
-        <small style="color:rgba(230,238,248,0.6)">Guardado en tu navegador</small>
-        <button id="resetBtn" class="btn">Restaurar</button>
-      </div>
-    </aside>
-    <main class="main">
-      <div class="header">
-        <div>
-          <div class="title">Previsualizador</div>
-          <div style="font-size:13px;color:rgba(230,238,248,0.65)">Selecciona un proyecto en la izquierda para cargarlo aquí</div>
-        </div>
-        <div class="controls">
-          <button id="openGithub" class="btn">Abrir en GitHub</button>
-          <button id="editBtn" class="btn">Editar</button>
-        </div>
-      </div>
-      <div class="preview">
-        <div class="glow"></div>
-        <div id="previewInner" class="placeholder">
-          <div>
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.9"><path d="M3 3h18v6H3z"></path><path d="M5 21h14a1 1 0 0 0 1-1V10H4v10a1 1 0 0 0 1 1z"></path></svg>
-            <h2 style="margin-top:12px">Ningún proyecto seleccionado</h2>
-            <p style="margin-top:8px;max-width:540px;color:rgba(230,238,248,0.6)">Presiona <strong>➕</strong> para agregar un proyecto (URL de GitHub Pages o enlace público) y entrégale un nombre. También puedes editar proyectos existentes.</p>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
-
-  <div id="modal" class="modal-backdrop" role="dialog" aria-modal="true">
+  <div id="modal" class="modal-backdrop">
     <div class="modal">
-      <h2 id="modalTitle">Agregar Proyecto</h2>
-      <div class="form-row">
-        <input id="pTitle" placeholder="Título del proyecto (ej: Mi juego)" />
-        <input id="pURL" placeholder="URL (ej: https://tuusuario.github.io/repo/)" />
-      </div>
-      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+      <h2 id="modalTitle"></h2>
+      <div class="form-group"><input id="pTitle" placeholder="Título del proyecto"/></div>
+      <div class="form-group"><input id="pURL" placeholder="URL completa (https://...)"/></div>
+      <div class="form-group"><input id="pDesc" placeholder="Descripción corta del proyecto"/></div>
+      <div class="form-group"><input id="pIcon" placeholder="Ícono (un solo emoji, ej: 🚀)"/></div>
+      <div class="modal-actions">
         <button id="cancel" class="btn">Cancelar</button>
         <button id="save" class="btn">Guardar</button>
       </div>
     </div>
   </div>
-
+  
   <div id="contextMenu" class="context-menu">
     <ul>
-      <li data-action="open">▶️ Abrir Previsualización</li>
-      <li data-action="edit">✏️ Editar Proyecto</li>
-      <li data-action="delete" class="delete">🗑️ Eliminar Proyecto</li>
+      <li data-action="open_new_tab">🚀 Abrir en Pestaña Nueva</li>
+      <li data-action="edit">✏️ Editar</li>
+      <li data-action="delete" class="delete">🗑️ Eliminar</li>
     </ul>
   </div>
 
   <script>
     const qs = s => document.querySelector(s);
-    const qsa = s => document.querySelectorAll(s);
-    const projectsEl = qs('#projects');
-    const previewInner = qs('#previewInner');
+
+    const projectGrid = qs('#project-grid');
     const addBtn = qs('#addBtn');
     const modal = qs('#modal');
+    const modalTitle = qs('#modalTitle');
     const saveBtn = qs('#save');
     const cancelBtn = qs('#cancel');
     const pTitle = qs('#pTitle');
     const pURL = qs('#pURL');
-    const filter = qs('#filter');
-    const resetBtn = qs('#resetBtn');
-    const openGithubBtn = qs('#openGithub');
-    const editBtn = qs('#editBtn');
-    const contextMenu = qs('#contextMenu');
-    let projects = JSON.parse(localStorage.getItem('mv_projects') || '[]');
-    let selected = null;
+    const pDesc = qs('#pDesc');
+    const pIcon = qs('#pIcon');
+    const contextMenu = qs('#contextMenu'); // Referencia al menú
 
-    function renderList(filterText=''){
-      projectsEl.innerHTML='';
-      const list = projects.filter(p=>p.title.toLowerCase().includes(filterText.toLowerCase()));
-      if(!list.length){
-        projectsEl.innerHTML = '<div style="color:rgba(230,238,248,0.45);padding:14px">No hay proyectos. Agrega uno con ➕</div>'
+    let projects = JSON.parse(localStorage.getItem('mv_projects_cards') || '[]');
+
+    function renderList(){
+      projectGrid.innerHTML='';
+      if (!projects.length) {
+        projectGrid.innerHTML = `<p style="color: rgba(230, 238, 248, 0.5);">No hay proyectos. ¡Agrega el primero con el botón de arriba!</p>`;
         return;
       }
-      list.forEach((p)=>{
-        const item = document.createElement('div');
-        item.className='project-item';
-        item.innerHTML = `
-          <div class="project-thumb">${(p.title||'P').slice(0,2).toUpperCase()}</div>
-          <div class="project-meta">
-            <h3>${escapeHtml(p.title)}</h3>
-            <p>${truncate(p.url,48)}</p>
+      
+      projects.forEach((p, idx)=>{
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        card.dataset.url = p.url;
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-icon">${p.icon || '✨'}</div>
+            <div class="card-title">${escapeHtml(p.title)}</div>
           </div>
+          <p class="card-desc">${escapeHtml(p.desc)}</p>
         `;
-        projectsEl.appendChild(item);
+        card.style.animationDelay = `${idx * 100}ms`;
+        projectGrid.appendChild(card);
       });
     }
 
-    function truncate(s,n){return s.length>n? s.slice(0,n-1)+'…':s}
     function escapeHtml(s){return (s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 
-    // --- FUNCIÓN openPreview CORREGIDA CON TIMEOUT ---
-    function openPreview(idx){
-      const p = projects[idx];
-      selected = idx;
-      
-      // 1. Muestra el indicador de carga inmediatamente.
-      previewInner.innerHTML = '<div class="preview-loader"></div>';
-      
-      const iframe = document.createElement('iframe');
-      iframe.className='preview-iframe';
-
-      // --- INICIO DE LA CORRECCIÓN ---
-
-      // 2. Establece un temporizador. Si el iframe no carga en 8 segundos, muestra un error.
-      const loadTimeout = setTimeout(() => {
-        previewInner.innerHTML = `
-          <div class="placeholder">
-            <h3>😕 Error al cargar el proyecto</h3>
-            <p style="max-width: 450px; margin-top: 8px; line-height: 1.6;">
-              El sitio no pudo cargarse. Esto puede ocurrir si la URL no es correcta o si el sitio web bloquea su inserción en otras páginas por seguridad.
-            </p>
-          </div>
-        `;
-      }, 8000); // 8 segundos de espera
-
-      // 3. Cuando el iframe SÍ carga correctamente, cancela el temporizador y lo muestra.
-      iframe.onload = () => {
-        clearTimeout(loadTimeout); // Cancela el timeout de error.
-        previewInner.innerHTML = ''; // Limpia el loader.
-        previewInner.appendChild(iframe); // Muestra el iframe.
-      };
-      
-      // --- FIN DE LA CORRECCIÓN ---
-      
-      // 4. Asigna la URL para que empiece a cargar.
-      iframe.src = p.url;
-      
-      openGithubBtn.onclick = ()=> window.open(p.url,'_blank');
-      editBtn.onclick = ()=> openEdit(idx);
-      updateActiveInList();
-    }
-
-    function updateActiveInList(){
-      qsa('.project-item').forEach((el,i)=>{
-        el.style.borderColor = (i===selected)?'rgba(124,58,237,0.6)':'transparent';
-        el.style.boxShadow = (i===selected)?'0 12px 30px rgba(124,58,237,0.08)':'';
-      });
-    }
-
-    projectsEl.addEventListener('click', e=>{
-      const item = e.target.closest('.project-item');
-      if(item){
-        const idx = Array.from(projectsEl.children).indexOf(item);
-        if(idx>=0) openPreview(idx);
+    // El clic normal abre en pestaña nueva
+    projectGrid.addEventListener('click', e => {
+      const card = e.target.closest('.project-card');
+      if (card && card.dataset.url) {
+        window.open(card.dataset.url, '_blank');
       }
     });
-
-    projectsEl.addEventListener('contextmenu', e=>{
-      e.preventDefault();
-      const item = e.target.closest('.project-item');
-      if(!item) return;
-      const idx = Array.from(projectsEl.children).indexOf(item);
-      if(idx < 0) return;
-      contextMenu.style.display = 'block';
-      contextMenu.style.left = `${e.pageX}px`;
-      contextMenu.style.top = `${e.pageY}px`;
-      contextMenu.dataset.idx = idx;
-    });
-
-    window.addEventListener('click', ()=>{
-      contextMenu.style.display = 'none';
-    });
     
+    // --- NUEVO: LÓGICA DEL MENÚ CONTEXTUAL ---
+
+    // 1. Mostrar el menú al hacer clic derecho en una tarjeta
+    projectGrid.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        const card = e.target.closest('.project-card');
+        if (!card) return;
+
+        const idx = Array.from(projectGrid.children).indexOf(card);
+        if (idx < 0) return;
+
+        contextMenu.dataset.idx = idx;
+        contextMenu.style.display = 'block';
+        contextMenu.style.left = `${e.pageX}px`;
+        contextMenu.style.top = `${e.pageY}px`;
+    });
+
+    // 2. Ocultar el menú al hacer clic en cualquier otro lado
+    window.addEventListener('click', () => {
+        contextMenu.style.display = 'none';
+    });
+
+    // 3. Manejar las acciones del menú
     contextMenu.addEventListener('click', e => {
-      const action = e.target.dataset.action;
-      const idx = parseInt(contextMenu.dataset.idx, 10);
-      if (isNaN(idx)) return;
-      if (action === 'open') openPreview(idx);
-      if (action === 'edit') openEdit(idx);
-      if (action === 'delete') deleteProject(idx);
+        const action = e.target.dataset.action;
+        const idx = parseInt(contextMenu.dataset.idx, 10);
+        if (isNaN(idx)) return;
+
+        if (action === 'open_new_tab') window.open(projects[idx].url, '_blank');
+        if (action === 'edit') openEditModal(idx);
+        if (action === 'delete') deleteProject(idx);
     });
+
+    // --- FUNCIONES DE AGREGAR, EDITAR Y ELIMINAR ---
     
-    function openEdit(idx){
-      const p = projects[idx];
-      qs('#modalTitle').textContent = 'Editar Proyecto';
-      pTitle.value = p.title; pURL.value = p.url;
-      modal.style.display='flex';
-      saveBtn.onclick = ()=>{ projects[idx] = {title:pTitle.value.trim(), url:pURL.value.trim()}; persist(); closeModal(); renderList(filter.value); if(selected==idx) openPreview(idx)};
+    function openEditModal(idx) {
+        const p = projects[idx];
+        modalTitle.textContent = "Editar Proyecto";
+        pTitle.value = p.title;
+        pURL.value = p.url;
+        pDesc.value = p.desc;
+        pIcon.value = p.icon;
+        modal.style.display = 'flex';
+
+        saveBtn.onclick = () => {
+            projects[idx] = {
+                title: pTitle.value.trim(),
+                url: pURL.value.trim(),
+                desc: pDesc.value.trim(),
+                icon: pIcon.value.trim()
+            };
+            persist();
+            closeModal();
+            renderList();
+        };
     }
 
-    function deleteProject(idx){
-      if(!confirm('¿Eliminar este proyecto?')) return;
-      projects.splice(idx,1); persist(); renderList(filter.value); previewInner.innerHTML = '<div class="placeholder"><div><h2>Selecciona otro proyecto</h2></div></div>';
-      selected = null;
-      updateActiveInList();
+    function deleteProject(idx) {
+        if (confirm(`¿Estás seguro de que quieres eliminar el proyecto "${projects[idx].title}"?`)) {
+            projects.splice(idx, 1);
+            persist();
+            renderList();
+        }
     }
 
-    addBtn.addEventListener('click', ()=>{
-      qs('#modalTitle').textContent = 'Agregar Proyecto';
-      pTitle.value=''; pURL.value=''; modal.style.display='flex';
-      saveBtn.onclick = ()=>{
-        const title = pTitle.value.trim(); const url = pURL.value.trim();
-        if(!title||!url){ alert('Ambos campos son requeridos'); return; }
-        projects.unshift({title, url}); persist(); closeModal(); renderList(filter.value); openPreview(0);
+    addBtn.addEventListener('click', () => {
+      modalTitle.textContent = "Agregar Nuevo Proyecto";
+      pTitle.value=''; pURL.value=''; pDesc.value=''; pIcon.value='';
+      modal.style.display = 'flex';
+      
+      saveBtn.onclick = () => {
+        const newProject = {
+          title: pTitle.value.trim(),
+          url: pURL.value.trim(),
+          desc: pDesc.value.trim(),
+          icon: pIcon.value.trim()
+        };
+
+        if (!newProject.title || !newProject.url || !newProject.desc) {
+          alert('El título, la URL y la descripción son requeridos.');
+          return;
+        }
+        projects.unshift(newProject);
+        persist();
+        closeModal();
+        renderList();
       }
     });
-
+    
     cancelBtn.addEventListener('click', closeModal);
-    function closeModal(){ modal.style.display='none'; }
-    filter.addEventListener('input', ()=> renderList(filter.value));
-    function persist(){ localStorage.setItem('mv_projects', JSON.stringify(projects)); }
-
-    resetBtn.addEventListener('click', ()=>{
-      if(!confirm('Restaurar datos de ejemplo y limpiar los guardados?')) return;
-      loadSample();
-    });
-
-
+    function closeModal(){ modal.style.display = 'none'; }
+    function persist(){ localStorage.setItem('mv_projects_cards', JSON.stringify(projects)); }
 
     function loadSample(){
       projects = [
-        {title:'Portafolio (Demo)', url:'https://mito.github.io/portafolio/'},
-        {title:'Juego Canvas', url:'https://mito.github.io/juego-canvas/'},
-        {title:'App SPA React', url:'https://mito.github.io/app-react/'}
+        {title:'Portafolio Personal', url:'https://github.com', desc: 'Un portafolio moderno para mostrar mis habilidades y proyectos principales.', icon: '👨‍💻'},
+        {title:'Juego en Canvas', url:'https://github.com', desc: 'Un juego interactivo desarrollado con HTML5 Canvas y JavaScript puro.', icon: '🎮'},
+        {title:'App del Clima', url:'https://github.com', desc: 'Aplicación que consume una API para mostrar el pronóstico del tiempo en tiempo real.', icon: '🌦️'},
+        {title:'E-commerce de Ropa', url:'https://github.com', desc: 'Tienda en línea con carrito de compras y pasarela de pago simulada.', icon: '👕'},
       ];
-      persist(); renderList();
+      persist();
     }
 
-    // initialize
-    if(!projects.length) loadSample();
+    if (!projects.length) loadSample();
     renderList();
-
-    projectsEl.addEventListener('dblclick', e=>{
-      const item = e.target.closest('.project-item');
-      if(!item) return; const idx = Array.from(projectsEl.children).indexOf(item); if(idx>=0) openPreview(idx);
-    });
-
-    window.addEventListener('keydown', e=>{
-      if((e.ctrlKey||e.metaKey) && e.key==='k'){ e.preventDefault(); filter.focus(); }
-      if((e.ctrlKey||e.metaKey) && e.key==='n'){ e.preventDefault(); addBtn.click(); }
-    });
-
-    window.addEventListener('message', ()=>{});
-
-    window.addEventListener('load', () => {
-      qs('#preloader').classList.add('hidden');
-    });
   </script>
 </body>
 </html>
