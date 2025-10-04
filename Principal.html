@@ -65,6 +65,40 @@
     /* nice scrollbar */
     .projects::-webkit-scrollbar{width:8px}
     .projects::-webkit-scrollbar-thumb{background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));border-radius:8px}
+    
+    /* --- NUEVOS ESTILOS PARA EL MENÚ CONTEXTUAL --- */
+    .context-menu {
+      position: absolute;
+      display: none;
+      background: #0a142c;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 6px;
+      box-shadow: 0 8px 24px rgba(2, 6, 23, 0.7);
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .context-menu ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .context-menu li {
+      padding: 8px 14px;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .context-menu li:hover {
+      background: rgba(124, 58, 237, 0.2);
+    }
+    .context-menu li.delete {
+      color: #f472b6;
+    }
+    .context-menu li.delete:hover {
+      background: rgba(244, 114, 182, 0.2);
+    }
+    /* --- FIN DE NUEVOS ESTILOS --- */
   </style>
 </head>
 <body>
@@ -84,8 +118,7 @@
       </div>
 
       <div id="projects" class="projects" aria-live="polite">
-        <!-- proyectos dinámicos -->
-      </div>
+        </div>
 
       <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
         <small style="color:rgba(230,238,248,0.6)">Guardado en tu navegador</small>
@@ -118,7 +151,6 @@
     </main>
   </div>
 
-  <!-- Modal -->
   <div id="modal" class="modal-backdrop" role="dialog" aria-modal="true">
     <div class="modal">
       <h2 id="modalTitle">Agregar Proyecto</h2>
@@ -131,6 +163,14 @@
         <button id="save" class="btn">Guardar</button>
       </div>
     </div>
+  </div>
+
+  <div id="contextMenu" class="context-menu">
+    <ul>
+      <li data-action="open">▶️ Abrir Previsualización</li>
+      <li data-action="edit">✏️ Editar Proyecto</li>
+      <li data-action="delete" class="delete">🗑️ Eliminar Proyecto</li>
+    </ul>
   </div>
 
   <script>
@@ -150,6 +190,8 @@
     const resetBtn = qs('#resetBtn');
     const openGithubBtn = qs('#openGithub');
     const editBtn = qs('#editBtn');
+    // --- NUEVA VARIABLE PARA EL MENÚ ---
+    const contextMenu = qs('#contextMenu');
 
     let projects = JSON.parse(localStorage.getItem('mv_projects') || '[]');
     let selected = null;
@@ -161,19 +203,15 @@
         projectsEl.innerHTML = '<div style="color:rgba(230,238,248,0.45);padding:14px">No hay proyectos. Agrega uno con ➕</div>'
         return;
       }
-      list.forEach((p, idx)=>{
+      list.forEach((p)=>{ // Se quita el idx porque ya no se usa aquí
         const item = document.createElement('div');
         item.className='project-item';
+        // --- PLANTILLA MODIFICADA: Se eliminó div.project-actions ---
         item.innerHTML = `
           <div class="project-thumb">${(p.title||'P').slice(0,2).toUpperCase()}</div>
           <div class="project-meta">
             <h3>${escapeHtml(p.title)}</h3>
             <p>${truncate(p.url,48)}</p>
-          </div>
-          <div class="project-actions">
-            <button data-idx="${idx}" class="btn openBtn">▶</button>
-            <button data-idx="${idx}" class="btn editSmall">✎</button>
-            <button data-idx="${idx}" class="btn delSmall">🗑</button>
           </div>
         `;
         projectsEl.appendChild(item);
@@ -204,20 +242,49 @@
       });
     }
 
-    // Events (delegation)
+    // --- MANEJO DE EVENTOS MODIFICADO ---
+
+    // Evento de clic normal para abrir la previsualización
     projectsEl.addEventListener('click', e=>{
-      const open = e.target.closest('.openBtn');
-      const edit = e.target.closest('.editSmall');
-      const del = e.target.closest('.delSmall');
       const item = e.target.closest('.project-item');
-      if(open) return openPreview(open.dataset.idx);
-      if(edit) return openEdit(edit.dataset.idx);
-      if(del) return deleteProject(del.dataset.idx);
       if(item){
         const idx = Array.from(projectsEl.children).indexOf(item);
         if(idx>=0) openPreview(idx);
       }
     });
+
+    // Evento de clic derecho (contextmenu) para mostrar las opciones
+    projectsEl.addEventListener('contextmenu', e=>{
+      e.preventDefault(); // Previene el menú por defecto del navegador
+      const item = e.target.closest('.project-item');
+      if(!item) return;
+
+      const idx = Array.from(projectsEl.children).indexOf(item);
+      if(idx < 0) return;
+
+      contextMenu.style.display = 'block';
+      contextMenu.style.left = `${e.pageX}px`;
+      contextMenu.style.top = `${e.pageY}px`;
+      contextMenu.dataset.idx = idx; // Guardamos el índice del proyecto en el menú
+    });
+
+    // Ocultar el menú contextual al hacer clic en cualquier parte
+    window.addEventListener('click', ()=>{
+      contextMenu.style.display = 'none';
+    });
+    
+    // Manejar acciones del menú contextual
+    contextMenu.addEventListener('click', e => {
+      const action = e.target.dataset.action;
+      const idx = parseInt(contextMenu.dataset.idx, 10);
+      if (isNaN(idx)) return;
+
+      if (action === 'open') openPreview(idx);
+      if (action === 'edit') openEdit(idx);
+      if (action === 'delete') deleteProject(idx);
+    });
+    
+    // --- FIN DE LA MODIFICACIÓN DE EVENTOS ---
 
     function openEdit(idx){
       const p = projects[idx];
@@ -230,6 +297,8 @@
     function deleteProject(idx){
       if(!confirm('¿Eliminar este proyecto?')) return;
       projects.splice(idx,1); persist(); renderList(filter.value); previewInner.innerHTML = '<div class="placeholder"><div><h2>Selecciona otro proyecto</h2></div></div>';
+      selected = null;
+      updateActiveInList();
     }
 
     addBtn.addEventListener('click', ()=>{
