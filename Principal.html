@@ -1,29 +1,3 @@
-¡Excelente idea\! Añadir efectos de carga mejora mucho la experiencia de usuario, dando una sensación de profesionalismo y respuesta.
-
-He modificado el código para incorporar ambos efectos que solicitaste:
-
-1.  **Efecto de Carga Inicial (Preloader):** Un indicador aparecerá a pantalla completa mientras la aplicación se carga por primera vez. Se desvanecerá suavemente cuando todo esté listo.
-2.  **Indicador de Carga para Proyectos:** Al seleccionar un proyecto, verás un indicador de carga dentro del panel de previsualización. Este permanecerá visible hasta que la página externa (`iframe`) se haya cargado por completo.
-
-A continuación, te explico los cambios y te proporciono el código completo.
-
------
-
-### Resumen de los Cambios
-
-  * **CSS:** He añadido estilos para dos nuevos elementos: `#preloader` (el cargador de página completa) y `.preview-loader` (el indicador para el `iframe`). Ambos usan animaciones CSS para el efecto giratorio.
-  * **HTML:** He agregado el `div` del `#preloader` justo al inicio del `<body>` para que sea lo primero que se vea.
-  * **JavaScript:**
-      * He modificado la función `openPreview` para que primero muestre el `.preview-loader` y luego, una vez que el `iframe` ha cargado su contenido (usando el evento `iframe.onload`), oculte el cargador y muestre el `iframe`.
-      * He añadido un nuevo listener para el evento `window.onload` al final del script. Este se encarga de ocultar el `#preloader` inicial con un efecto de desvanecimiento.
-
------
-
-### Código Modificado
-
-Aquí tienes el código actualizado y listo para usar. Los cambios están claramente señalados con comentarios.
-
-```html
 <!doctype html>
 <html lang="es">
 <head>
@@ -366,4 +340,3 @@ Aquí tienes el código actualizado y listo para usar. Los cambios están claram
   </script>
 </body>
 </html>
-```
