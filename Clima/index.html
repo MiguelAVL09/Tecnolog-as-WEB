@@ -3,32 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App del Clima | Pronóstico en Tiempo Real</title>
+    <title>Explorador de Películas Populares</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="weather-card">
-        <div class="search-container">
-            <input type="text" id="city-input" placeholder="Busca una ciudad...">
-            <button id="search-btn">Buscar</button>
-        </div>
-
-        <div id="weather-info" class="weather-info hidden">
-            </div>
-
-        <div id="forecast-container" class="forecast-container hidden">
-            </div>
+    <div class="container">
+        <header>
+            <h1>Películas del Momento</h1>
+        </header>
         
-        <div id="loader" class="loader hidden"></div>
-        
-        <div id="error-message" class="error-message hidden">
-            <p>Ciudad no encontrada. Por favor, intenta de nuevo.</p>
-        </div>
+        <main id="movie-grid" class="movie-grid">
+            </main>
 
+        <div id="loader" class="loader"></div>
     </div>
 
     <script src="script.js"></script>
