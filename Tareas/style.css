@@ -1,0 +1,130 @@
+:root {
+    --bg-color: #f4f7f8;
+    --card-bg-color: #ffffff;
+    --text-color: #333;
+    --primary-color: #4a90e2;
+    --primary-hover-color: #357ABD;
+    --delete-color: #e94560;
+    --delete-hover-color: #c9302c;
+    --completed-color: #9e9e9e;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--bg-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.todo-container {
+    background-color: var(--card-bg-color);
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 500px;
+    padding: 30px;
+}
+
+header h1 {
+    color: var(--text-color);
+    text-align: center;
+    margin: 0 0 20px 0;
+    font-size: 24px;
+}
+
+#task-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#task-input {
+    flex-grow: 1;
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+#task-input:focus {
+    border-color: var(--primary-color);
+}
+
+#task-form button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0 20px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#task-form button:hover {
+    background-color: var(--primary-hover-color);
+}
+
+#task-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s, opacity 0.4s;
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+.task-item.completed {
+    opacity: 0.6;
+}
+
+.task-item.completed .task-text {
+    text-decoration: line-through;
+    color: var(--completed-color);
+}
+
+.task-item input[type="checkbox"] {
+    margin-right: 15px;
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+}
+
+.task-text {
+    flex-grow: 1;
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.task-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 18px;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+
+.task-actions button:hover {
+    opacity: 1;
+}
+
+.edit-btn { color: var(--primary-color); }
+.delete-btn { color: var(--delete-color); }

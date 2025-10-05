@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Tareas | App Sencilla</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="todo-container">
+        <header>
+            <h1>Lista de Tareas 📝</h1>
+        </header>
+        <form id="task-form">
+            <input 
+                type="text" 
+                id="task-input" 
+                placeholder="Añadir una nueva tarea..." 
+                autocomplete="off"
+            >
+            <button type="submit">Agregar</button>
+        </form>
+        <ul id="task-list">
+            </ul>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
