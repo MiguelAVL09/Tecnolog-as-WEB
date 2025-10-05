@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mi Hub de Proyectos — Compartido</title>
+  <title>Mi Hub de Proyectos</title>
   <style>
     body{font-family:Inter,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#020617 60%);color:#e6eef8}
     *{box-sizing:border-box;margin:0;padding:0}
@@ -23,8 +23,6 @@
     .project-meta{flex:1}
     .project-meta h3{font-size:14px}
     .project-meta p{font-size:12px;color:rgba(230,238,248,.65); word-break: break-all;}
-    .project-actions{display:flex;gap:8px}
-    .btn{padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.04);cursor:pointer}
     .main{display:flex;flex-direction:column;gap:14px}
     .header{display:flex;justify-content:space-between;align-items:center;gap:12px}
     .title{font-size:20px}
@@ -38,13 +36,12 @@
       <div class="brand">
         <div class="logo">MV</div>
         <div>
-          <h1>Hub de Proyectos (Compartido)</h1>
-          <p>Los cambios se ven en tiempo real</p>
+          <h1>Hub de Proyectos</h1>
+          <p>Portafolio de Aplicaciones Web</p>
         </div>
       </div>
       <div class="search">
         <input id="filter" placeholder="Buscar proyectos..."/>
-        <button id="addBtn" class="btn">➕</button>
       </div>
       <div id="projects" class="projects"></div>
     </aside>
@@ -59,110 +56,81 @@
         <div id="previewInner" class="placeholder">
           <div>
             <h2>Selecciona un proyecto</h2>
-            <p>Los proyectos que agregues serán visibles para todos.</p>
+            <p>Elige un proyecto de la lista para cargarlo aquí.</p>
           </div>
         </div>
       </div>
     </main>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
   <script>
-    // =========== TU CONFIGURACIÓN DE FIREBASE YA ESTÁ AQUÍ ===========
-    const firebaseConfig = {
-        apiKey: "AIzaSyCtsRpzPlu06DuL_HuQuvdIuw5COTJsY10",
-        authDomain: "hub-de-proyectos-b5a67.firebaseapp.com",
-        projectId: "hub-de-proyectos-b5a67",
-        storageBucket: "hub-de-proyectos-b5a67.appspot.com",
-        messagingSenderId: "128915940109",
-        appId: "1:128915940109:web:0251fa394cbd48a15f8644",
-        measurementId: "G-KF10ZQSR7F"
-    };
-
-    // INICIALIZAR FIREBASE Y FIRESTORE
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const projectsCollection = db.collection('projects');
-
-    // CÓDIGO DE LA APP
     const qs = s => document.querySelector(s);
     const projectsEl = qs('#projects');
-    const addBtn = qs('#addBtn');
-    
-    let allProjects = [];
+    const filterInput = qs('#filter');
+    const previewInner = qs('#previewInner');
 
-    function renderList(projectsToRender, filterText = '') {
+    // --- LISTA DE PROYECTOS FIJA ---
+    // Si quieres cambiar, agregar o quitar proyectos, edita esta lista.
+    const misProyectos = [
+        {
+            title: 'App del Clima',
+            url: 'https://miguelavl09.github.io/Tecnolog-as-WEB/Clima/'
+        },
+        {
+            title: 'Graficadora',
+            url: 'https://miguelavl09.github.io/Tecnolog-as-WEB/Graficadora/'
+        },
+        {
+            title: 'Lista de Tareas',
+            url: 'https://miguelavl09.github.io/Tecnolog-as-WEB/Tareas/'
+        },
+        {
+            title: 'Tik Tak Toe',
+            url: 'https://miguelavl09.github.io/Tecnolog-as-WEB/Tik%20tak%20toe/'
+        }
+    ];
+
+    // FUNCIÓN PARA MOSTRAR LOS PROYECTOS EN LA LISTA
+    function renderList(filterText = '') {
       projectsEl.innerHTML = '';
-      const list = projectsToRender.filter(p => p.title.toLowerCase().includes(filterText.toLowerCase()));
+      const list = misProyectos.filter(p => p.title.toLowerCase().includes(filterText.toLowerCase()));
       
       if (!list.length) {
-        projectsEl.innerHTML = '<div style="color:rgba(230,238,248,0.45);padding:14px">No hay proyectos.</div>';
+        projectsEl.innerHTML = '<div style="color:rgba(230,238,248,0.45);padding:14px">No se encontraron proyectos.</div>';
         return;
       }
 
       list.forEach(p => {
         const item = document.createElement('div');
         item.className = 'project-item';
-        item.dataset.id = p.id;
+        // Guardamos la URL en el elemento para usarla después
+        item.dataset.url = p.url;
         item.innerHTML = `
-          <div class="project-thumb">${(p.title || 'P').slice(0, 2).toUpperCase()}</div>
+          <div class="project-thumb">${p.title.slice(0, 2).toUpperCase()}</div>
           <div class="project-meta">
             <h3>${p.title}</h3>
             <p>${p.url.substring(0, 30)}...</p>
-          </div>
-          <div class="project-actions">
-            <button class="btn delSmall">🗑️</button>
           </div>
         `;
         projectsEl.appendChild(item);
       });
     }
     
-    // ESCUCHAR CAMBIOS DE LA BASE DE DATOS EN TIEMPO REAL
-    projectsCollection.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
-        allProjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderList(allProjects, qs('#filter').value);
-    }, error => {
-        console.error("Error al leer de Firestore: ", error);
-        alert("Error al conectar con la base de datos. Revisa la consola (F12) para más detalles.");
-    });
-
-    // AGREGAR UN PROYECTO A FIREBASE
-    addBtn.addEventListener('click', () => {
-        const title = prompt('Título del proyecto:');
-        if (!title) return;
-        const url = prompt('URL del proyecto:');
-        if (!url) return;
-        
-        projectsCollection.add({
-            title: title.trim(),
-            url: url.trim(),
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    });
-
-    // ELIMINAR O PREVISUALIZAR UN PROYECTO
+    // EVENTO PARA PREVISUALIZAR UN PROYECTO
     projectsEl.addEventListener('click', e => {
         const item = e.target.closest('.project-item');
-        if (!item) return;
-        const id = item.dataset.id;
-        const project = allProjects.find(p => p.id === id);
-
-        if (e.target.closest('.delSmall')) {
-            if (confirm(`¿Eliminar "${project.title}"?`)) {
-                projectsCollection.doc(id).delete();
-            }
-        } else {
-            qs('#previewInner').innerHTML = `<iframe style="width:100%;height:100%;border:0;border-radius:10px;" src="${project.url}"></iframe>`;
-        }
+        if (!item || !item.dataset.url) return;
+        
+        previewInner.innerHTML = `<iframe style="width:100%;height:100%;border:0;border-radius:10px;" src="${item.dataset.url}"></iframe>`;
     });
     
-    // FILTRADO
-    qs('#filter').addEventListener('input', e => {
-        renderList(allProjects, e.target.value);
+    // EVENTO PARA FILTRAR LA LISTA
+    filterInput.addEventListener('input', e => {
+        renderList(e.target.value);
     });
+    
+    // CARGA INICIAL DE LA LISTA
+    renderList();
 
   </script>
 </body>
