@@ -1,79 +1,117 @@
 document.addEventListener('DOMContentLoaded', () => {
-    
     // ---- CONFIGURACIÓN INICIAL ----
-    // Pega tu Token de Acceso de la API (v4 auth) de TMDb aquí.
-    const apiToken = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5MmVhNTlkNmY0N2NlNTRhZGYwMzQ1YTRmMWIwOWZkYiIsIm5iZiI6MTc1OTYyMTY5MC42MTYsInN1YiI6IjY4ZTFiMjNhMmE1YTQxZWQyZjYxNzI5NCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.i8OemNzGoyV3jqQu91LPSw8nFwNqRc-4Qq95fqQi5OA';
+    // Tu clave de API ya está insertada aquí.
+    const apiKey = 'cd3d4b74a875ae17582a5f15e5e45f87'; 
 
     // ---- ELEMENTOS DEL DOM ----
-    const movieGrid = document.getElementById('movie-grid');
+    const cityInput = document.getElementById('city-input');
+    const searchBtn = document.getElementById('search-btn');
+    const weatherInfo = document.getElementById('weather-info');
+    const forecastContainer = document.getElementById('forecast-container');
     const loader = document.getElementById('loader');
+    const errorMessage = document.getElementById('error-message');
 
-    // ---- URLS Y OPCIONES DE LA API ----
-    const apiUrl = 'https://api.themoviedb.org/3/movie/popular?language=es-MX&page=1';
-    const imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
-
-    const options = {
-        method: 'GET',
-        headers: {
-            accept: 'application/json',
-            // El token se envía en la cabecera 'Authorization'
-            Authorization: `Bearer ${apiToken}`
+    // ---- EVENT LISTENERS ----
+    searchBtn.addEventListener('click', () => {
+        const city = cityInput.value.trim();
+        if (city) {
+            fetchWeatherData(city);
         }
-    };
+    });
 
-    // ---- FUNCIÓN PARA OBTENER Y MOSTRAR LAS PELÍCULAS ----
-    async function fetchAndDisplayMovies() {
+    cityInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            const city = cityInput.value.trim();
+            if (city) {
+                fetchWeatherData(city);
+            }
+        }
+    });
+    
+    // ---- FUNCIÓN PRINCIPAL PARA OBTENER DATOS DEL CLIMA ----
+    async function fetchWeatherData(city) {
         showLoader(true);
-        try {
-            const response = await fetch(apiUrl, options);
+        hideError();
+        hideWeatherInfo();
 
-            if (!response.ok) {
-                throw new Error(`Error en la API: ${response.statusText}`);
+        const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=es`;
+        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=es`;
+
+        try {
+            const [currentWeatherResponse, forecastResponse] = await Promise.all([
+                fetch(currentWeatherUrl),
+                fetch(forecastUrl)
+            ]);
+
+            if (!currentWeatherResponse.ok || !forecastResponse.ok) {
+                throw new Error('Ciudad no encontrada o error en la API');
             }
 
-            const data = await response.json();
-            displayMovies(data.results);
+            const currentWeatherData = await currentWeatherResponse.json();
+            const forecastData = await forecastResponse.json();
+            
+            displayCurrentWeather(currentWeatherData);
+            displayForecast(forecastData);
 
         } catch (error) {
-            console.error('No se pudieron obtener las películas:', error);
-            movieGrid.innerHTML = '<p>Error al cargar las películas. Verifica tu token de API.</p>';
+            console.error('Error fetching weather data:', error);
+            showError();
         } finally {
             showLoader(false);
         }
     }
 
-    // ---- FUNCIÓN PARA RENDERIZAR LAS PELÍCULAS EN EL HTML ----
-    function displayMovies(movies) {
-        movieGrid.innerHTML = ''; // Limpiar el contenedor
+    // ---- FUNCIONES PARA ACTUALIZAR LA INTERFAZ ----
+    function displayCurrentWeather(data) {
+        weatherInfo.innerHTML = `
+            <h2>${data.name}, ${data.sys.country}</h2>
+            <p class="temperature">${Math.round(data.main.temp)}°C</p>
+            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="Icono del clima" class="weather-icon">
+            <p class="description">${data.weather[0].description}</p>
+            <div class="weather-details">
+                <span>Humedad: ${data.main.humidity}%</span>
+                <span>Viento: ${data.wind.speed} m/s</span>
+            </div>
+        `;
+        weatherInfo.classList.remove('hidden');
+    }
 
-        movies.forEach(movie => {
-            const movieCard = document.createElement('div');
-            movieCard.className = 'movie-card';
+    function displayForecast(data) {
+        forecastContainer.innerHTML = ''; 
 
-            const imageUrl = movie.poster_path ? `${imageBaseUrl}${movie.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
+        const dailyForecasts = data.list.filter(item => item.dt_txt.includes("12:00:00"));
 
-            movieCard.innerHTML = `
-                <img src="${imageUrl}" alt="${movie.title}">
-                <div class="movie-info">
-                    <h3>${movie.title}</h3>
-                </div>
-                <div class="rating">${movie.vote_average.toFixed(1)}</div>
+        dailyForecasts.forEach(forecast => {
+            const date = new Date(forecast.dt * 1000);
+            const dayName = date.toLocaleDateString('es-ES', { weekday: 'short' });
+
+            const forecastItem = document.createElement('div');
+            forecastItem.className = 'forecast-item';
+            forecastItem.innerHTML = `
+                <p>${dayName}</p>
+                <img src="https://openweathermap.org/img/wn/${forecast.weather[0].icon}.png" alt="Icono del clima">
+                <p>${Math.round(forecast.main.temp)}°C</p>
             `;
-            
-            // Añadimos un evento de clic para abrir la página de la película
-            movieCard.addEventListener('click', () => {
-                window.open(`https://www.themoviedb.org/movie/${movie.id}`, '_blank');
-            });
-
-            movieGrid.appendChild(movieCard);
+            forecastContainer.appendChild(forecastItem);
         });
+        forecastContainer.classList.remove('hidden');
+    }
+    
+    // ---- FUNCIONES AUXILIARES PARA MOSTRAR/OCULTAR ELEMENTOS ----
+    function showLoader(show) {
+        loader.classList.toggle('hidden', !show);
     }
 
-    // ---- FUNCIÓN AUXILIAR PARA EL LOADER ----
-    function showLoader(isLoading) {
-        loader.style.display = isLoading ? 'block' : 'none';
+    function showError() {
+        errorMessage.classList.remove('hidden');
     }
 
-    // ---- INICIAR LA APLICACIÓN ----
-    fetchAndDisplayMovies();
+    function hideError() {
+        errorMessage.classList.add('hidden');
+    }
+
+    function hideWeatherInfo() {
+        weatherInfo.classList.add('hidden');
+        forecastContainer.classList.add('hidden');
+    }
 });
