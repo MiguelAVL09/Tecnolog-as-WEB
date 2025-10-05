@@ -3,310 +3,171 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Mi Hub de Proyectos — Portafolio</title>
+  <title>Mi Hub de Proyectos — Compartido</title>
   <style>
-    /* Reset & Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    body{font-family:Inter,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#020617 60%);color:#e6eef8}
     *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%;}
-    body{
-      font-family:'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; 
-      background: #020617;
-      color: #e6eef8;
-      overflow-x: hidden;
-    }
-
-    /* --- CONTENEDOR PRINCIPAL Y CABECERA --- */
-    .container {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 40px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .header h1 {
-      font-size: 28px;
-      background: linear-gradient(45deg, #a78bfa, #06b6d4);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .btn {
-      padding: 10px 18px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      cursor: pointer;
-      color: #e6eef8;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    .btn:hover {
-      background: rgba(255,255,255,0.1);
-      border-color: #a78bfa;
-    }
-
-    /* --- PARRILLA DE PROYECTOS --- */
-    .project-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 24px;
-    }
-    
-    /* --- ESTILO DE LA TARJETA DE PROYECTO --- */
-    .project-card {
-      background: linear-gradient(135deg, #0f172a, #13203c);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 24px;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: cardFadeIn 0.5s ease-out forwards;
-    }
-    .project-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 20px 40px rgba(167, 139, 250, 0.15);
-    }
-    .project-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -150%;
-      width: 75%;
-      height: 100%;
-      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
-      transform: skewX(-25deg);
-      transition: left 0.75s ease;
-    }
-    .project-card:hover::before {
-      left: 150%;
-    }
-    .card-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-    .card-icon { font-size: 36px; }
-    .card-title { font-size: 20px; font-weight: 600; color: #fff; }
-    .card-desc { font-size: 14px; color: rgba(230, 238, 248, 0.7); line-height: 1.6; }
-
-    @keyframes cardFadeIn {
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* --- MODAL --- */
-    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.8);display:none;align-items:center;justify-content:center;padding:28px;backdrop-filter:blur(5px);z-index:100}
-    .modal{width:500px;max-width:96%;background:#0f172a;border-radius:12px;padding:24px;border:1px solid rgba(255,255,255,.1);box-shadow:0 10px 30px rgba(0,0,0,0.3)}
-    .modal h2{margin-bottom:20px;font-size:22px}
-    .form-group{margin-bottom:12px}
-    .form-group input{width:100%;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,.1);background:rgba(2,6,23,.5);color:inherit;font-size:14px}
-    .modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:20px}
-
-    /* --- NUEVO: ESTILOS DEL MENÚ CONTEXTUAL --- */
-    .context-menu{position:absolute;display:none;background:#13203c;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px;box-shadow:0 8px 24px rgba(2,6,23,.7);z-index:1000;backdrop-filter:blur(4px)}
-    .context-menu ul{list-style:none;margin:0;padding:0}
-    .context-menu li{padding:8px 14px;cursor:pointer;border-radius:6px;font-size:14px;white-space:nowrap;}
-    .context-menu li:hover{background:rgba(167,139,250,.2)}
-    .context-menu li.delete{color:#f472b6}
-    .context-menu li.delete:hover{background:rgba(244,114,182,.2)}
-
+    .container{display:grid;grid-template-columns:320px 1fr;gap:20px;height:100vh;padding:28px}
+    .sidebar{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));backdrop-filter:blur(6px);border-radius:18px;padding:18px;box-shadow:0 10px 30px rgba(2,6,23,.6);display:flex;flex-direction:column;gap:14px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(45deg,#7c3aed,#06b6d4);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(124,58,237,.25);font-weight:700}
+    .brand h1{font-size:16px}
+    .brand p{font-size:12px;color:rgba(230,238,248,.7)}
+    .search{display:flex;gap:8px;align-items:center}
+    .search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:transparent;color:inherit}
+    .projects{flex:1;overflow:auto;padding-right:6px;display:flex;flex-direction:column;gap:8px}
+    .project-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer;transition:all .18s;border:1px solid transparent}
+    .project-item:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(2,6,23,.6)}
+    .project-thumb{width:44px;height:34px;border-radius:8px;background:linear-gradient(90deg,#111827,#0b1220);display:flex;align-items:center;justify-content:center;font-weight:600}
+    .project-meta{flex:1}
+    .project-meta h3{font-size:14px}
+    .project-meta p{font-size:12px;color:rgba(230,238,248,.65)}
+    .btn{padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.04);cursor:pointer}
+    .main{display:flex;flex-direction:column;gap:14px}
+    .header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .title{font-size:20px}
+    .placeholder{display:grid;place-items:center;height:100%;color:rgba(230,238,248,.6);text-align:center;padding:28px}
+    .modal-backdrop{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(2,6,23,.6),rgba(2,6,23,.85));display:none;align-items:center;justify-content:center;padding:28px}
+    .modal{width:680px;max-width:96%;background:linear-gradient(180deg,#061126 0%,#041021 100%);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,.04)}
+    .modal h2{margin-bottom:10px}
   </style>
 </head>
 <body>
-  
-  <div class="container">
-    <div class="header">
-      <h1>Mis Proyectos</h1>
-      <button id="addBtn" class="btn">➕ Agregar Proyecto</button>
-    </div>
-
-    <div id="project-grid" class="project-grid">
+  <div id="app" class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">MV</div>
+        <div>
+          <h1>Hub de Proyectos (Compartido)</h1>
+          <p>Los cambios se ven en tiempo real</p>
+        </div>
       </div>
+      <div class="search">
+        <input id="filter" placeholder="Buscar proyectos..."/>
+        <button id="addBtn" class="btn">➕</button>
+      </div>
+      <div id="projects" class="projects"></div>
+    </aside>
+
+    <main class="main">
+       </main>
   </div>
 
   <div id="modal" class="modal-backdrop">
-    <div class="modal">
-      <h2 id="modalTitle"></h2>
-      <div class="form-group"><input id="pTitle" placeholder="Título del proyecto"/></div>
-      <div class="form-group"><input id="pURL" placeholder="URL completa (https://...)"/></div>
-      <div class="form-group"><input id="pDesc" placeholder="Descripción corta del proyecto"/></div>
-      <div class="form-group"><input id="pIcon" placeholder="Ícono (un solo emoji, ej: 🚀)"/></div>
-      <div class="modal-actions">
-        <button id="cancel" class="btn">Cancelar</button>
-        <button id="save" class="btn">Guardar</button>
-      </div>
-    </div>
-  </div>
-  
-  <div id="contextMenu" class="context-menu">
-    <ul>
-      <li data-action="open_new_tab">🚀 Abrir en Pestaña Nueva</li>
-      <li data-action="edit">✏️ Editar</li>
-      <li data-action="delete" class="delete">🗑️ Eliminar</li>
-    </ul>
-  </div>
+     </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
   <script>
-    const qs = s => document.querySelector(s);
+    // =========== PASO 1: PEGA TU CONFIGURACIÓN DE FIREBASE AQUÍ ===========
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "firebase/app";
+    import { getAnalytics } from "firebase/analytics";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
 
-    const projectGrid = qs('#project-grid');
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyCtsRpzPlu06DuL_HuQuvdIuw5COTJsY10",
+      authDomain: "hub-de-proyectos-b5a67.firebaseapp.com",
+      projectId: "hub-de-proyectos-b5a67",
+      storageBucket: "hub-de-proyectos-b5a67.firebasestorage.app",
+      messagingSenderId: "128915940109",
+      appId: "1:128915940109:web:0251fa394cbd48a15f8644",
+      measurementId: "G-KF10ZQSR7F"
+    };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+    // =========== PASO 2: INICIALIZAR FIREBASE Y FIRESTORE ===========
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const projectsCollection = db.collection('projects');
+
+    // =========== PASO 3: CÓDIGO DE LA APP MODIFICADO ===========
+    const qs = s => document.querySelector(s);
+    const projectsEl = qs('#projects');
     const addBtn = qs('#addBtn');
     const modal = qs('#modal');
-    const modalTitle = qs('#modalTitle');
-    const saveBtn = qs('#save');
-    const cancelBtn = qs('#cancel');
-    const pTitle = qs('#pTitle');
-    const pURL = qs('#pURL');
-    const pDesc = qs('#pDesc');
-    const pIcon = qs('#pIcon');
-    const contextMenu = qs('#contextMenu'); // Referencia al menú
+    // ... (otras referencias al DOM como antes)
 
-    let projects = JSON.parse(localStorage.getItem('mv_projects_cards') || '[]');
+    let allProjects = []; // Array local para el filtrado
 
-    function renderList(){
-      projectGrid.innerHTML='';
-      if (!projects.length) {
-        projectGrid.innerHTML = `<p style="color: rgba(230, 238, 248, 0.5);">No hay proyectos. ¡Agrega el primero con el botón de arriba!</p>`;
+    // FUNCIÓN DE RENDERIZADO (similar a la anterior)
+    function renderList(projectsToRender, filterText = '') {
+      projectsEl.innerHTML = '';
+      const list = projectsToRender.filter(p => p.title.toLowerCase().includes(filterText.toLowerCase()));
+      
+      if (!list.length) {
+        projectsEl.innerHTML = '<div style="color:rgba(230,238,248,0.45);padding:14px">No hay proyectos.</div>';
         return;
       }
-      
-      projects.forEach((p, idx)=>{
-        const card = document.createElement('div');
-        card.className = 'project-card';
-        card.dataset.url = p.url;
-        card.innerHTML = `
-          <div class="card-header">
-            <div class="card-icon">${p.icon || '✨'}</div>
-            <div class="card-title">${escapeHtml(p.title)}</div>
+
+      list.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'project-item';
+        item.dataset.id = p.id; // Guardamos el ID de Firebase
+        item.innerHTML = `
+          <div class="project-thumb">${(p.title || 'P').slice(0, 2).toUpperCase()}</div>
+          <div class="project-meta">
+            <h3>${p.title}</h3>
+            <p>${p.url}</p>
           </div>
-          <p class="card-desc">${escapeHtml(p.desc)}</p>
+          <div class="project-actions">
+            <button class="btn delSmall">🗑️</button>
+          </div>
         `;
-        card.style.animationDelay = `${idx * 100}ms`;
-        projectGrid.appendChild(card);
+        projectsEl.appendChild(item);
       });
     }
-
-    function escapeHtml(s){return (s||'').replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
-
-    // El clic normal abre en pestaña nueva
-    projectGrid.addEventListener('click', e => {
-      const card = e.target.closest('.project-card');
-      if (card && card.dataset.url) {
-        window.open(card.dataset.url, '_blank');
-      }
-    });
     
-    // --- NUEVO: LÓGICA DEL MENÚ CONTEXTUAL ---
-
-    // 1. Mostrar el menú al hacer clic derecho en una tarjeta
-    projectGrid.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        const card = e.target.closest('.project-card');
-        if (!card) return;
-
-        const idx = Array.from(projectGrid.children).indexOf(card);
-        if (idx < 0) return;
-
-        contextMenu.dataset.idx = idx;
-        contextMenu.style.display = 'block';
-        contextMenu.style.left = `${e.pageX}px`;
-        contextMenu.style.top = `${e.pageY}px`;
+    // --- NUEVO: ESCUCHAR CAMBIOS DE LA BASE DE DATOS EN TIEMPO REAL ---
+    projectsCollection.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        allProjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderList(allProjects, qs('#filter').value);
     });
 
-    // 2. Ocultar el menú al hacer clic en cualquier otro lado
-    window.addEventListener('click', () => {
-        contextMenu.style.display = 'none';
-    });
-
-    // 3. Manejar las acciones del menú
-    contextMenu.addEventListener('click', e => {
-        const action = e.target.dataset.action;
-        const idx = parseInt(contextMenu.dataset.idx, 10);
-        if (isNaN(idx)) return;
-
-        if (action === 'open_new_tab') window.open(projects[idx].url, '_blank');
-        if (action === 'edit') openEditModal(idx);
-        if (action === 'delete') deleteProject(idx);
-    });
-
-    // --- FUNCIONES DE AGREGAR, EDITAR Y ELIMINAR ---
-    
-    function openEditModal(idx) {
-        const p = projects[idx];
-        modalTitle.textContent = "Editar Proyecto";
-        pTitle.value = p.title;
-        pURL.value = p.url;
-        pDesc.value = p.desc;
-        pIcon.value = p.icon;
-        modal.style.display = 'flex';
-
-        saveBtn.onclick = () => {
-            projects[idx] = {
-                title: pTitle.value.trim(),
-                url: pURL.value.trim(),
-                desc: pDesc.value.trim(),
-                icon: pIcon.value.trim()
-            };
-            persist();
-            closeModal();
-            renderList();
-        };
-    }
-
-    function deleteProject(idx) {
-        if (confirm(`¿Estás seguro de que quieres eliminar el proyecto "${projects[idx].title}"?`)) {
-            projects.splice(idx, 1);
-            persist();
-            renderList();
-        }
-    }
-
+    // --- MODIFICADO: AGREGAR UN PROYECTO A FIREBASE ---
     addBtn.addEventListener('click', () => {
-      modalTitle.textContent = "Agregar Nuevo Proyecto";
-      pTitle.value=''; pURL.value=''; pDesc.value=''; pIcon.value='';
-      modal.style.display = 'flex';
-      
-      saveBtn.onclick = () => {
-        const newProject = {
-          title: pTitle.value.trim(),
-          url: pURL.value.trim(),
-          desc: pDesc.value.trim(),
-          icon: pIcon.value.trim()
-        };
-
-        if (!newProject.title || !newProject.url || !newProject.desc) {
-          alert('El título, la URL y la descripción son requeridos.');
-          return;
+        const title = prompt('Título del proyecto:');
+        const url = prompt('URL del proyecto:');
+        
+        if (title && url) {
+            projectsCollection.add({
+                title: title.trim(),
+                url: url.trim(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
         }
-        projects.unshift(newProject);
-        persist();
-        closeModal();
-        renderList();
-      }
+    });
+
+    // --- MODIFICADO: ELIMINAR, EDITAR, ABRIR ---
+    projectsEl.addEventListener('click', e => {
+        const item = e.target.closest('.project-item');
+        if (!item) return;
+        const id = item.dataset.id;
+        const project = allProjects.find(p => p.id === id);
+
+        if (e.target.closest('.delSmall')) {
+            // Eliminar de Firebase
+            if (confirm(`¿Eliminar "${project.title}"?`)) {
+                projectsCollection.doc(id).delete();
+            }
+        } else {
+            // Previsualizar (sin cambios)
+            qs('#previewInner').innerHTML = `<iframe style="width:100%;height:100%;border:0" src="${project.url}"></iframe>`;
+        }
     });
     
-    cancelBtn.addEventListener('click', closeModal);
-    function closeModal(){ modal.style.display = 'none'; }
-    function persist(){ localStorage.setItem('mv_projects_cards', JSON.stringify(projects)); }
+    // Filtrado (sin cambios, usa el array local 'allProjects')
+    qs('#filter').addEventListener('input', e => {
+        renderList(allProjects, e.target.value);
+    });
 
-    function loadSample(){
-      projects = [
-        {title:'Portafolio Personal', url:'https://github.com', desc: 'Un portafolio moderno para mostrar mis habilidades y proyectos principales.', icon: '👨‍💻'},
-        {title:'Juego en Canvas', url:'https://github.com', desc: 'Un juego interactivo desarrollado con HTML5 Canvas y JavaScript puro.', icon: '🎮'},
-        {title:'App del Clima', url:'https://github.com', desc: 'Aplicación que consume una API para mostrar el pronóstico del tiempo en tiempo real.', icon: '🌦️'},
-        {title:'E-commerce de Ropa', url:'https://github.com', desc: 'Tienda en línea con carrito de compras y pasarela de pago simulada.', icon: '👕'},
-      ];
-      persist();
-    }
-
-    if (!projects.length) loadSample();
-    renderList();
   </script>
 </body>
 </html>
