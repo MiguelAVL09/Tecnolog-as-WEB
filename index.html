@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mi Hub de Proyectos — Compartido</title>
+  <style>
+    body{font-family:Inter,sans-serif;background:linear-gradient(135deg,#0f172a 0%,#020617 60%);color:#e6eef8}
+    *{box-sizing:border-box;margin:0;padding:0}
+    .container{display:grid;grid-template-columns:320px 1fr;gap:20px;height:100vh;padding:28px}
+    .sidebar{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));backdrop-filter:blur(6px);border-radius:18px;padding:18px;box-shadow:0 10px 30px rgba(2,6,23,.6);display:flex;flex-direction:column;gap:14px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:52px;height:52px;border-radius:12px;background:linear-gradient(45deg,#7c3aed,#06b6d4);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(124,58,237,.25);font-weight:700}
+    .brand h1{font-size:16px}
+    .brand p{font-size:12px;color:rgba(230,238,248,.7)}
+    .search{display:flex;gap:8px;align-items:center}
+    .search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.04);background:transparent;color:inherit}
+    .projects{flex:1;overflow:auto;padding-right:6px;display:flex;flex-direction:column;gap:8px}
+    .project-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;cursor:pointer;transition:all .18s;border:1px solid transparent}
+    .project-item:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(2,6,23,.6)}
+    .project-thumb{width:44px;height:34px;border-radius:8px;background:linear-gradient(90deg,#111827,#0b1220);display:flex;align-items:center;justify-content:center;font-weight:600}
+    .project-meta{flex:1}
+    .project-meta h3{font-size:14px}
+    .project-meta p{font-size:12px;color:rgba(230,238,248,.65)}
+    .btn{padding:8px 10px;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.04);cursor:pointer}
+    .main{display:flex;flex-direction:column;gap:14px}
+    .header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .title{font-size:20px}
+    .placeholder{display:grid;place-items:center;height:100%;color:rgba(230,238,248,.6);text-align:center;padding:28px}
+    .modal-backdrop{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(2,6,23,.6),rgba(2,6,23,.85));display:none;align-items:center;justify-content:center;padding:28px}
+    .modal{width:680px;max-width:96%;background:linear-gradient(180deg,#061126 0%,#041021 100%);border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,.04)}
+    .modal h2{margin-bottom:10px}
+  </style>
+</head>
+<body>
+  <div id="app" class="container">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">MV</div>
+        <div>
+          <h1>Hub de Proyectos (Compartido)</h1>
+          <p>Los cambios se ven en tiempo real</p>
+        </div>
+      </div>
+      <div class="search">
+        <input id="filter" placeholder="Buscar proyectos..."/>
+        <button id="addBtn" class="btn">➕</button>
+      </div>
+      <div id="projects" class="projects"></div>
+    </aside>
+
+    <main class="main">
+       </main>
+  </div>
+
+  <div id="modal" class="modal-backdrop">
+     </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    // =========== PASO 1: PEGA TU CONFIGURACIÓN DE FIREBASE AQUÍ ===========
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "firebase/app";
+    import { getAnalytics } from "firebase/analytics";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyCtsRpzPlu06DuL_HuQuvdIuw5COTJsY10",
+      authDomain: "hub-de-proyectos-b5a67.firebaseapp.com",
+      projectId: "hub-de-proyectos-b5a67",
+      storageBucket: "hub-de-proyectos-b5a67.firebasestorage.app",
+      messagingSenderId: "128915940109",
+      appId: "1:128915940109:web:0251fa394cbd48a15f8644",
+      measurementId: "G-KF10ZQSR7F"
+    };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+    // =========== PASO 2: INICIALIZAR FIREBASE Y FIRESTORE ===========
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const projectsCollection = db.collection('projects');
+
+    // =========== PASO 3: CÓDIGO DE LA APP MODIFICADO ===========
+    const qs = s => document.querySelector(s);
+    const projectsEl = qs('#projects');
+    const addBtn = qs('#addBtn');
+    const modal = qs('#modal');
+    // ... (otras referencias al DOM como antes)
+
+    let allProjects = []; // Array local para el filtrado
+
+    // FUNCIÓN DE RENDERIZADO (similar a la anterior)
+    function renderList(projectsToRender, filterText = '') {
+      projectsEl.innerHTML = '';
+      const list = projectsToRender.filter(p => p.title.toLowerCase().includes(filterText.toLowerCase()));
+      
+      if (!list.length) {
+        projectsEl.innerHTML = '<div style="color:rgba(230,238,248,0.45);padding:14px">No hay proyectos.</div>';
+        return;
+      }
+
+      list.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'project-item';
+        item.dataset.id = p.id; // Guardamos el ID de Firebase
+        item.innerHTML = `
+          <div class="project-thumb">${(p.title || 'P').slice(0, 2).toUpperCase()}</div>
+          <div class="project-meta">
+            <h3>${p.title}</h3>
+            <p>${p.url}</p>
+          </div>
+          <div class="project-actions">
+            <button class="btn delSmall">🗑️</button>
+          </div>
+        `;
+        projectsEl.appendChild(item);
+      });
+    }
+    
+    // --- NUEVO: ESCUCHAR CAMBIOS DE LA BASE DE DATOS EN TIEMPO REAL ---
+    projectsCollection.orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        allProjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderList(allProjects, qs('#filter').value);
+    });
+
+    // --- MODIFICADO: AGREGAR UN PROYECTO A FIREBASE ---
+    addBtn.addEventListener('click', () => {
+        const title = prompt('Título del proyecto:');
+        const url = prompt('URL del proyecto:');
+        
+        if (title && url) {
+            projectsCollection.add({
+                title: title.trim(),
+                url: url.trim(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+    });
+
+    // --- MODIFICADO: ELIMINAR, EDITAR, ABRIR ---
+    projectsEl.addEventListener('click', e => {
+        const item = e.target.closest('.project-item');
+        if (!item) return;
+        const id = item.dataset.id;
+        const project = allProjects.find(p => p.id === id);
+
+        if (e.target.closest('.delSmall')) {
+            // Eliminar de Firebase
+            if (confirm(`¿Eliminar "${project.title}"?`)) {
+                projectsCollection.doc(id).delete();
+            }
+        } else {
+            // Previsualizar (sin cambios)
+            qs('#previewInner').innerHTML = `<iframe style="width:100%;height:100%;border:0" src="${project.url}"></iframe>`;
+        }
+    });
+    
+    // Filtrado (sin cambios, usa el array local 'allProjects')
+    qs('#filter').addEventListener('input', e => {
+        renderList(allProjects, e.target.value);
+    });
+
+  </script>
+</body>
+</html>
