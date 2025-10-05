@@ -94,6 +94,7 @@ body {
 .weather-icon {
     width: 100px;
     height: 100px;
+    margin: -15px auto; /* Ajuste para los iconos de esta API */
 }
 
 /* --- Pronóstico de 5 días --- */

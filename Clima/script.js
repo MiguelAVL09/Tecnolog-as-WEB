@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // ---- CONFIGURACIÓN INICIAL ----
-    // Tu clave de API ya está insertada aquí.
-    const apiKey = 'cd3d4b74a875ae17582a5f15e5e45f87'; 
+    // Pega tu API Key de WeatherAPI.com aquí.
+    const apiKey = '3dbfbca8fa9f48ec91200511250510';
 
     // ---- ELEMENTOS DEL DOM ----
     const cityInput = document.getElementById('city-input');
@@ -28,30 +28,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // ---- FUNCIÓN PRINCIPAL PARA OBTENER DATOS DEL CLIMA ----
+    // ---- FUNCIÓN PRINCIPAL PARA OBTENER DATOS (AHORA USA WEATHERAPI) ----
     async function fetchWeatherData(city) {
         showLoader(true);
         hideError();
         hideWeatherInfo();
 
-        const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=es`;
-        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric&lang=es`;
+        // Esta URL obtiene el clima actual y el pronóstico de 5 días en una sola llamada
+        const apiUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=5&aqi=no&alerts=no&lang=es`;
 
         try {
-            const [currentWeatherResponse, forecastResponse] = await Promise.all([
-                fetch(currentWeatherUrl),
-                fetch(forecastUrl)
-            ]);
+            const response = await fetch(apiUrl);
 
-            if (!currentWeatherResponse.ok || !forecastResponse.ok) {
-                throw new Error('Ciudad no encontrada o error en la API');
+            if (!response.ok) {
+                throw new Error('Ciudad no encontrada.');
             }
 
-            const currentWeatherData = await currentWeatherResponse.json();
-            const forecastData = await forecastResponse.json();
+            const data = await response.json();
             
-            displayCurrentWeather(currentWeatherData);
-            displayForecast(forecastData);
+            displayCurrentWeather(data);
+            displayForecast(data.forecast.forecastday);
 
         } catch (error) {
             console.error('Error fetching weather data:', error);
@@ -61,43 +57,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ---- FUNCIONES PARA ACTUALIZAR LA INTERFAZ ----
+    // ---- FUNCIONES PARA ACTUALIZAR LA INTERFAZ (ADAPTADAS A LA NUEVA API) ----
     function displayCurrentWeather(data) {
+        const current = data.current;
+        const location = data.location;
+
         weatherInfo.innerHTML = `
-            <h2>${data.name}, ${data.sys.country}</h2>
-            <p class="temperature">${Math.round(data.main.temp)}°C</p>
-            <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="Icono del clima" class="weather-icon">
-            <p class="description">${data.weather[0].description}</p>
+            <h2>${location.name}, ${location.country}</h2>
+            <p class="temperature">${Math.round(current.temp_c)}°C</p>
+            <img src="${current.condition.icon}" alt="Icono del clima" class="weather-icon">
+            <p class="description">${current.condition.text}</p>
             <div class="weather-details">
-                <span>Humedad: ${data.main.humidity}%</span>
-                <span>Viento: ${data.wind.speed} m/s</span>
+                <span>Humedad: ${current.humidity}%</span>
+                <span>Viento: ${current.wind_kph} km/h</span>
             </div>
         `;
         weatherInfo.classList.remove('hidden');
     }
 
-    function displayForecast(data) {
-        forecastContainer.innerHTML = ''; 
+    function displayForecast(forecastDays) {
+        forecastContainer.innerHTML = ''; // Limpiar pronóstico anterior
 
-        const dailyForecasts = data.list.filter(item => item.dt_txt.includes("12:00:00"));
-
-        dailyForecasts.forEach(forecast => {
-            const date = new Date(forecast.dt * 1000);
+        forecastDays.forEach(day => {
+            const date = new Date(day.date);
+            // Sumamos 1 día porque JS maneja la zona horaria de forma extraña a veces
+            date.setDate(date.getDate() + 1); 
             const dayName = date.toLocaleDateString('es-ES', { weekday: 'short' });
 
             const forecastItem = document.createElement('div');
             forecastItem.className = 'forecast-item';
             forecastItem.innerHTML = `
                 <p>${dayName}</p>
-                <img src="https://openweathermap.org/img/wn/${forecast.weather[0].icon}.png" alt="Icono del clima">
-                <p>${Math.round(forecast.main.temp)}°C</p>
+                <img src="${day.day.condition.icon}" alt="Icono del clima">
+                <p>${Math.round(day.day.avgtemp_c)}°C</p>
             `;
             forecastContainer.appendChild(forecastItem);
         });
         forecastContainer.classList.remove('hidden');
     }
     
-    // ---- FUNCIONES AUXILIARES PARA MOSTRAR/OCULTAR ELEMENTOS ----
+    // ---- FUNCIONES AUXILIARES (SIN CAMBIOS) ----
     function showLoader(show) {
         loader.classList.toggle('hidden', !show);
     }
